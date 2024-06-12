@@ -255,6 +255,15 @@
                 index: index
             }));
 
+            // Ensure total supply >= total demand
+            let totalSupply = suppliers.reduce((acc, supplier) => acc + supplier.supply, 0);
+            let totalDemand = consumers.reduce((acc, consumer) => acc + consumer.demand, 0);
+            while (totalSupply < totalDemand) {
+                let extraSupply = totalDemand - totalSupply;
+                suppliers[Math.floor(Math.random() * numSuppliers)].supply += extraSupply;
+                totalSupply += extraSupply;
+            }
+
             transportCosts = suppliers.map(supplier => 
                 consumers.map(consumer => 
                     parseFloat(Math.hypot(supplier.x - consumer.x, supplier.y - consumer.y).toFixed(2))
