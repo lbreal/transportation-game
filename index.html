@@ -47,13 +47,15 @@
 
             // Draw allocations
             for (let [supplier, consumer, quantity] of allocations) {
-                ctx.beginPath();
-                ctx.moveTo(supplier.x, supplier.y);
-                ctx.lineTo(consumer.x, consumer.y);
-                ctx.strokeStyle = 'blue';
-                ctx.stroke();
-                ctx.fillStyle = 'black';
-                ctx.fillText(quantity, (supplier.x + consumer.x) / 2, (supplier.y + consumer.y) / 2);
+                if (consumer) {
+                    ctx.beginPath();
+                    ctx.moveTo(supplier.x, supplier.y);
+                    ctx.lineTo(consumer.x, consumer.y);
+                    ctx.strokeStyle = 'blue';
+                    ctx.stroke();
+                    ctx.fillStyle = 'black';
+                    ctx.fillText(quantity, (supplier.x + consumer.x) / 2, (supplier.y + consumer.y) / 2);
+                }
             }
 
             // Draw optimal allocations
@@ -109,7 +111,9 @@
         function calculateTotalCost(allocations) {
             let totalCost = 0;
             for (let [supplier, consumer, quantity] of allocations) {
-                totalCost += quantity * transportCosts[supplier.index][consumer.index];
+                if (consumer) {
+                    totalCost += quantity * transportCosts[supplier.index][consumer.index];
+                }
             }
             return Math.round(totalCost);
         }
@@ -137,8 +141,12 @@
                     if (Math.hypot(supplier.x - x, supplier.y - y) < 15) {
                         let quantity = prompt("Enter quantity to transport from this supplier:");
                         quantity = parseInt(quantity);
-                        allocations.push([supplier, null, quantity]);
-                        drawPointsAndText();
+                        if (!isNaN(quantity) && quantity > 0 && quantity <= supplier.supply) {
+                            allocations.push([supplier, null, quantity]);
+                            drawPointsAndText();
+                        } else {
+                            alert("Invalid quantity. Please enter a number between 1 and the supplier's supply.");
+                        }
                         return;
                     }
                 }
