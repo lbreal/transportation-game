@@ -41,12 +41,6 @@
         let optimalAllocations = [];
         let optimalCost = 0;
 
-        // Load images
-        const supplierImg = new Image();
-        supplierImg.src = 'supplier.png';
-        const consumerImg = new Image();
-        consumerImg.src = 'consumer.png';
-
         // Function to draw points on the canvas
         function drawPointsAndText() {
             ctx.clearRect(0, 0, WIDTH, HEIGHT);
@@ -75,18 +69,24 @@
 
             // Draw suppliers
             for (let supplier of suppliers) {
-                ctx.drawImage(supplierImg, supplier.x - 15, supplier.y - 15, 30, 30);
+                ctx.beginPath();
+                ctx.arc(supplier.x, supplier.y, 10, 0, 2 * Math.PI);
+                ctx.fillStyle = 'red';
+                ctx.fill();
                 ctx.fillStyle = 'black';
                 ctx.font = '12px Arial';
-                ctx.fillText(`Supply: ${supplier.supply}`, supplier.x + 10, supplier.y - 10);
+                ctx.fillText(`Supply: ${supplier.supply}`, supplier.x + 15, supplier.y);
             }
 
             // Draw consumers
             for (let consumer of consumers) {
-                ctx.drawImage(consumerImg, consumer.x - 15, consumer.y - 15, 30, 30);
+                ctx.beginPath();
+                ctx.arc(consumer.x, consumer.y, 10, 0, 2 * Math.PI);
+                ctx.fillStyle = 'green';
+                ctx.fill();
                 ctx.fillStyle = 'black';
                 ctx.font = '12px Arial';
-                ctx.fillText(`Demand: ${consumer.demand}`, consumer.x + 10, consumer.y - 10);
+                ctx.fillText(`Demand: ${consumer.demand}`, consumer.x + 15, consumer.y);
             }
 
             // Draw total cost text
