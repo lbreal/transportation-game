@@ -225,7 +225,7 @@
                     messageDiv.style.color = 'green';
                     optimalAllocations = allocations;
                 } else {
-                    message = `Not this time! The optimal cost is ${minCost}.`;
+                    message = `Not this time! The optimal cost is ${Math.round(minCost)}.`;
                     messageDiv.style.color = 'red';
                     optimalAllocations = bestAllocations;
                 }
