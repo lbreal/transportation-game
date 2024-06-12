@@ -149,7 +149,8 @@
                     })),
                     bnds: {
                         type: glpk.GLP_UP,
-                        ub: suppliers[i].supply
+                        ub: suppliers[i].supply,
+                        lb: 0
                     }
                 });
             }
@@ -162,7 +163,8 @@
                         coef: 1
                     })),
                     bnds: {
-                        type: glpk.GLP_LO,
+                        type: glpk.GLP_FX,
+                        ub: consumers[j].demand,
                         lb: consumers[j].demand
                     }
                 });
@@ -225,7 +227,7 @@
                     messageDiv.style.color = 'green';
                     optimalAllocations = allocations;
                 } else {
-                    message = `Not this time! The optimal cost is ${Math.round(minCost)}.`;
+                    message = `Not this time! The optimal cost is ${minCost}.`;
                     messageDiv.style.color = 'red';
                     optimalAllocations = bestAllocations;
                 }
@@ -255,7 +257,7 @@
 
             transportCosts = suppliers.map(supplier => 
                 consumers.map(consumer => 
-                    Math.hypot(supplier.x - consumer.x, supplier.y - consumer.y).toFixed(2)
+                    parseFloat(Math.hypot(supplier.x - consumer.x, supplier.y - consumer.y).toFixed(2))
                 )
             );
 
