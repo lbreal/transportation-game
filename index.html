@@ -120,13 +120,22 @@
 
         // Function to find the optimal solution
         function findOptimalSolution() {
-            // For simplicity, let's assume the optimal solution is already known
-            let minCost = 100; // Placeholder value for the optimal cost
-            let bestAllocations = [
-                [suppliers[0], consumers[0], 20],
-                [suppliers[1], consumers[1], 30],
-                [suppliers[2], consumers[2], 40]
-            ];
+            let remainingSupply = suppliers.map(s => s.supply);
+            let remainingDemand = consumers.map(c => c.demand);
+            let minCost = 0;
+            let bestAllocations = [];
+
+            for (let i = 0; i < numSuppliers; i++) {
+                for (let j = 0; j < numConsumers; j++) {
+                    if (remainingSupply[i] > 0 && remainingDemand[j] > 0) {
+                        let quantity = Math.min(remainingSupply[i], remainingDemand[j]);
+                        bestAllocations.push([suppliers[i], consumers[j], quantity]);
+                        remainingSupply[i] -= quantity;
+                        remainingDemand[j] -= quantity;
+                        minCost += quantity * transportCosts[i][j];
+                    }
+                }
+            }
 
             return { bestAllocations, minCost };
         }
