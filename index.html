@@ -149,8 +149,7 @@
                     })),
                     bnds: {
                         type: glpk.GLP_UP,
-                        ub: suppliers[i].supply,
-                        lb: 0
+                        ub: suppliers[i].supply
                     }
                 });
             }
@@ -170,7 +169,7 @@
                 });
             }
 
-            let solution = glpk.solve(problem, glpk.GLP_MSG_ALL);
+            let solution = glpk.solve(problem, glpk.GLP_MSG_OFF);
 
             let bestAllocations = [];
             let minCost = solution.result.z;
