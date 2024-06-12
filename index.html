@@ -185,23 +185,25 @@
 
         // Function to initialize the game
         function initGame() {
-            suppliers = [
-                { x: 100, y: 150, supply: 20, index: 0 },
-                { x: 100, y: 300, supply: 30, index: 1 },
-                { x: 100, y: 450, supply: 40, index: 2 }
-            ];
+            suppliers = Array.from({ length: numSuppliers }, (_, index) => ({
+                x: Math.random() * (WIDTH - 100) + 50,
+                y: Math.random() * (HEIGHT - 100) + 50,
+                supply: Math.floor(Math.random() * 50) + 20,
+                index: index
+            }));
 
-            consumers = [
-                { x: 700, y: 150, demand: 20, index: 0 },
-                { x: 700, y: 300, demand: 30, index: 1 },
-                { x: 700, y: 450, demand: 40, index: 2 }
-            ];
+            consumers = Array.from({ length: numConsumers }, (_, index) => ({
+                x: Math.random() * (WIDTH - 100) + 50,
+                y: Math.random() * (HEIGHT - 100) + 50,
+                demand: Math.floor(Math.random() * 50) + 20,
+                index: index
+            }));
 
-            transportCosts = [
-                [2, 4, 5],
-                [3, 1, 2],
-                [4, 2, 3]
-            ];
+            transportCosts = suppliers.map(supplier => 
+                consumers.map(consumer => 
+                    Math.hypot(supplier.x - consumer.x, supplier.y - consumer.y).toFixed(2)
+                )
+            );
 
             allocations = [];
             optimalAllocations = [];
