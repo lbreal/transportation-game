@@ -60,13 +60,15 @@
 
             // Draw optimal allocations
             for (let [supplier, consumer, quantity] of optimalAllocations) {
-                ctx.beginPath();
-                ctx.moveTo(supplier.x, supplier.y);
-                ctx.lineTo(consumer.x, consumer.y);
-                ctx.strokeStyle = 'yellow';
-                ctx.stroke();
-                ctx.fillStyle = 'black';
-                ctx.fillText(quantity, (supplier.x + consumer.x) / 2, (supplier.y + consumer.y) / 2);
+                if (quantity > 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(supplier.x, supplier.y);
+                    ctx.lineTo(consumer.x, consumer.y);
+                    ctx.strokeStyle = 'yellow';
+                    ctx.stroke();
+                    ctx.fillStyle = 'black';
+                    ctx.fillText(quantity, (supplier.x + consumer.x) / 2, (supplier.y + consumer.y) / 2);
+                }
             }
 
             // Draw suppliers
@@ -183,7 +185,7 @@
                 minCost += delta * transportCosts[ei][ej];
             }
 
-            return { bestAllocations, minCost };
+            return { bestAllocations, minCost: Math.round(minCost) };
         }
 
         // Mouse click event
@@ -256,7 +258,7 @@
 
             transportCosts = suppliers.map(supplier => 
                 consumers.map(consumer => 
-                    Math.hypot(supplier.x - consumer.x, supplier.y - consumer.y).toFixed(2)
+                    Math.round(Math.hypot(supplier.x - consumer.x, supplier.y - consumer.y))
                 )
             );
 
