@@ -121,7 +121,7 @@
 
         // Function to find the optimal solution using GLPK.js
         function findOptimalSolution() {
-            if (typeof glpk === 'undefined') {
+            if (typeof GLPK === 'undefined') {
                 console.error("GLPK.js is not loaded.");
                 return null;
             }
@@ -129,7 +129,7 @@
             let problem = {
                 name: 'Transportation Problem',
                 objective: {
-                    direction: glpk.GLP_MIN,
+                    direction: GLPK.GLP_MIN,
                     name: 'obj',
                     vars: []
                 },
@@ -153,7 +153,7 @@
                         coef: 1
                     })),
                     bnds: {
-                        type: glpk.GLP_UP,
+                        type: GLPK.GLP_UP,
                         ub: suppliers[i].supply,
                         lb: 0
                     }
@@ -168,16 +168,16 @@
                         coef: 1
                     })),
                     bnds: {
-                        type: glpk.GLP_FX,
+                        type: GLPK.GLP_FX,
                         ub: consumers[j].demand,
                         lb: consumers[j].demand
                     }
                 });
             }
 
-            let solution = glpk.solve(problem, glpk.GLP_MSG_OFF);
+            let solution = GLPK.solve(problem, GLPK.GLP_MSG_OFF);
 
-            if (solution.status !== glpk.GLP_OPT) {
+            if (solution.status !== GLPK.GLP_OPT) {
                 console.error("No optimal solution found");
                 return null;
             }
