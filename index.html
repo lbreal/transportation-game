@@ -1,311 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Transportation Problem Game</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        #gameCanvas { border: 1px solid black; }
-        #message { font-size: 24px; font-weight: bold; margin-top: 10px; }
-        #instructions {
-            font-size: 18px;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-    </style>
+    <title>Test GLPK.js</title>
+    <!-- Use o link local para o GLPK.js -->
     <script src="glpk.min.js"></script>
 </head>
 <body>
-    <h1>Transportation Problem Game</h1>
-    <div id="instructions">
-        <p>Select quantities from <strong>suppliers</strong> by clicking with the left mouse button.</p>
-        <p>Allocate these quantities to <strong>consumers</strong> by clicking with the left mouse button.</p>
-        <p>Your goal is to minimize the total transportation cost.</p>
-        <p>Once you have allocated all quantities, click the right mouse button to see the optimal solution.</p>
-    </div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div id="message"></div>
+    <h1>Test GLPK.js</h1>
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const messageDiv = document.getElementById('message');
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("GLPK.js load test started.");
 
-        const WIDTH = 800;
-        const HEIGHT = 600;
-        const numSuppliers = 3;
-        const numConsumers = 3;
-
-        let suppliers = [];
-        let consumers = [];
-        let transportCosts = [];
-        let allocations = [];
-        let message = '';
-        let optimalAllocations = [];
-        let optimalCost = 0;
-
-        // Function to draw points on the canvas
-        function drawPointsAndText() {
-            ctx.clearRect(0, 0, WIDTH, HEIGHT);
-
-            // Draw allocations
-            for (let [supplier, consumer, quantity] of allocations) {
-                if (consumer) {
-                    ctx.beginPath();
-                    ctx.moveTo(supplier.x, supplier.y);
-                    ctx.lineTo(consumer.x, consumer.y);
-                    ctx.strokeStyle = 'blue';
-                    ctx.stroke();
-                    ctx.fillStyle = 'black';
-                    ctx.fillText(quantity, (supplier.x + consumer.x) / 2, (supplier.y + consumer.y) / 2);
-                }
-            }
-
-            // Draw optimal allocations
-            for (let [supplier, consumer, quantity] of optimalAllocations) {
-                ctx.beginPath();
-                ctx.moveTo(supplier.x, supplier.y);
-                ctx.lineTo(consumer.x, consumer.y);
-                ctx.strokeStyle = 'yellow';
-                ctx.stroke();
-                ctx.fillStyle = 'black';
-                ctx.fillText(quantity, (supplier.x + consumer.x) / 2, (supplier.y + consumer.y) / 2);
-            }
-
-            // Draw suppliers
-            for (let supplier of suppliers) {
-                ctx.beginPath();
-                ctx.arc(supplier.x, supplier.y, 10, 0, 2 * Math.PI);
-                ctx.fillStyle = 'red';
-                ctx.fill();
-                ctx.fillStyle = 'black';
-                ctx.font = '12px Arial';
-                ctx.fillText(`Supply: ${supplier.supply}`, supplier.x + 15, supplier.y);
-            }
-
-            // Draw consumers
-            for (let consumer of consumers) {
-                ctx.beginPath();
-                ctx.arc(consumer.x, consumer.y, 10, 0, 2 * Math.PI);
-                ctx.fillStyle = 'green';
-                ctx.fill();
-                ctx.fillStyle = 'black';
-                ctx.font = '12px Arial';
-                ctx.fillText(`Demand: ${consumer.demand}`, consumer.x + 15, consumer.y);
-            }
-
-            // Draw total cost text
-            const totalCost = calculateTotalCost(allocations);
-            ctx.fillStyle = 'black';
-            ctx.font = '24px Arial';
-            ctx.fillText(`Total Cost: ${totalCost}`, 10, 30);
-
-            // Display message
-            if (message) {
-                messageDiv.textContent = message;
-                messageDiv.style.display = 'block';
-            } else {
-                messageDiv.textContent = '';
-                messageDiv.style.display = 'none';
-            }
-        }
-
-        // Function to calculate total cost
-        function calculateTotalCost(allocations) {
-            let totalCost = 0;
-            for (let [supplier, consumer, quantity] of allocations) {
-                if (consumer) {
-                    totalCost += quantity * transportCosts[supplier.index][consumer.index];
-                }
-            }
-            return Math.round(totalCost);
-        }
-
-        // Function to find the optimal solution using GLPK.js
-        function findOptimalSolution() {
             if (typeof GLPK === 'undefined') {
                 console.error("GLPK.js is not loaded.");
-                return null;
-            }
+                alert("GLPK.js is not loaded.");
+            } else {
+                console.log("GLPK.js is loaded successfully.");
+                alert("GLPK.js is loaded successfully.");
 
-            let problem = {
-                name: 'Transportation Problem',
-                objective: {
-                    direction: GLPK.GLP_MIN,
-                    name: 'obj',
-                    vars: []
-                },
-                subjectTo: []
-            };
-
-            for (let i = 0; i < numSuppliers; i++) {
-                for (let j = 0; j < numConsumers; j++) {
-                    problem.objective.vars.push({
-                        name: `x${i}${j}`,
-                        coef: transportCosts[i][j]
-                    });
-                }
-            }
-
-            for (let i = 0; i < numSuppliers; i++) {
-                problem.subjectTo.push({
-                    name: `supply${i}`,
-                    vars: Array.from({ length: numConsumers }, (_, j) => ({
-                        name: `x${i}${j}`,
-                        coef: 1
-                    })),
-                    bnds: {
-                        type: GLPK.GLP_UP,
-                        ub: suppliers[i].supply,
-                        lb: 0
-                    }
-                });
-            }
-
-            for (let j = 0; j < numConsumers; j++) {
-                problem.subjectTo.push({
-                    name: `demand${j}`,
-                    vars: Array.from({ length: numSuppliers }, (_, i) => ({
-                        name: `x${i}${j}`,
-                        coef: 1
-                    })),
-                    bnds: {
-                        type: GLPK.GLP_FX,
-                        ub: consumers[j].demand,
-                        lb: consumers[j].demand
-                    }
-                });
-            }
-
-            let solution = GLPK.solve(problem, GLPK.GLP_MSG_OFF);
-
-            if (solution.status !== GLPK.GLP_OPT) {
-                console.error("No optimal solution found");
-                return null;
-            }
-
-            let bestAllocations = [];
-            let minCost = solution.result.z;
-
-            for (let i = 0; i < numSuppliers; i++) {
-                for (let j = 0; j < numConsumers; j++) {
-                    let quantity = solution.result.vars[`x${i}${j}`];
-                    if (quantity > 0) {
-                        bestAllocations.push([suppliers[i], consumers[j], quantity]);
-                    }
-                }
-            }
-
-            console.log("Optimal solution cost:", minCost);
-            console.log("Optimal allocations:", bestAllocations);
-
-            return { bestAllocations, minCost };
-        }
-
-        // Mouse click event
-        canvas.addEventListener('mousedown', (event) => {
-            const x = event.offsetX;
-            const y = event.offsetY;
-
-            if (event.button === 0) { // Left click
-                for (let supplier of suppliers) {
-                    if (Math.hypot(supplier.x - x, supplier.y - y) < 15) {
-                        let quantity = prompt("Enter quantity to transport from this supplier:");
-                        quantity = parseInt(quantity);
-                        if (!isNaN(quantity) && quantity > 0 && quantity <= supplier.supply) {
-                            allocations.push([supplier, null, quantity]);
-                            drawPointsAndText();
-                        } else {
-                            alert("Invalid quantity. Please enter a number between 1 and the supplier's supply.");
+                // Test solving a simple LP problem
+                const problem = {
+                    name: "Test Problem",
+                    objective: {
+                        direction: GLPK.GLP_MIN,
+                        name: "obj",
+                        vars: [
+                            { name: "x1", coef: 1 },
+                            { name: "x2", coef: 2 }
+                        ]
+                    },
+                    subjectTo: [
+                        {
+                            name: "c1",
+                            vars: [
+                                { name: "x1", coef: 1 },
+                                { name: "x2", coef: 1 }
+                            ],
+                            bnds: { type: GLPK.GLP_UP, ub: 5 }
                         }
-                        return;
-                    }
-                }
+                    ]
+                };
 
-                for (let consumer of consumers) {
-                    if (Math.hypot(consumer.x - x, consumer.y - y) < 15) {
-                        for (let allocation of allocations) {
-                            if (allocation[1] === null) {
-                                allocation[1] = consumer;
-                                drawPointsAndText();
-                                return;
-                            }
-                        }
-                    }
-                }
-            } else if (event.button === 2) { // Right click
-                const optimalSolution = findOptimalSolution();
-                if (!optimalSolution) {
-                    alert("No optimal solution found. Please check the console for details.");
-                    return;
-                }
-                const { bestAllocations, minCost } = optimalSolution;
-                const userCost = calculateTotalCost(allocations);
-
-                if (userCost === minCost) {
-                    message = 'Congratulations! You found the optimal solution.';
-                    messageDiv.style.color = 'green';
-                    optimalAllocations = allocations;
+                const solution = GLPK.solve(problem, GLPK.GLP_MSG_ALL);
+                if (solution.status === GLPK.GLP_OPT) {
+                    alert("Optimal solution found: " + JSON.stringify(solution.result));
                 } else {
-                    message = `Not this time! The optimal cost is ${minCost}.`;
-                    messageDiv.style.color = 'red';
-                    optimalAllocations = bestAllocations;
+                    alert("No optimal solution found.");
                 }
-
-                drawPointsAndText();
             }
+
+            console.log("GLPK.js load test completed.");
         });
-
-        // Prevent context menu on right click
-        canvas.addEventListener('contextmenu', (event) => event.preventDefault());
-
-        // Function to initialize the game
-        function initGame() {
-            suppliers = Array.from({ length: numSuppliers }, (_, index) => ({
-                x: Math.random() * (WIDTH - 100) + 50,
-                y: Math.random() * (HEIGHT - 100) + 50,
-                supply: Math.floor(Math.random() * 50) + 20,
-                index: index
-            }));
-
-            consumers = Array.from({ length: numConsumers }, (_, index) => ({
-                x: Math.random() * (WIDTH - 100) + 50,
-                y: Math.random() * (HEIGHT - 100) + 50,
-                demand: Math.floor(Math.random() * 50) + 20,
-                index: index
-            }));
-
-            // Ensure total supply >= total demand
-            let totalSupply = suppliers.reduce((acc, supplier) => acc + supplier.supply, 0);
-            let totalDemand = consumers.reduce((acc, consumer) => acc + consumer.demand, 0);
-            while (totalSupply < totalDemand) {
-                let extraSupply = totalDemand - totalSupply;
-                suppliers[Math.floor(Math.random() * numSuppliers)].supply += extraSupply;
-                totalSupply += extraSupply;
-            }
-
-            transportCosts = suppliers.map(supplier => 
-                consumers.map(consumer => 
-                    parseFloat(Math.hypot(supplier.x - consumer.x, supplier.y - consumer.y).toFixed(2))
-                )
-            );
-
-            allocations = [];
-            optimalAllocations = [];
-            message = '';
-
-            drawPointsAndText();
-
-            // Calculate and log the optimal solution at the start
-            const optimalSolution = findOptimalSolution();
-            if (optimalSolution) {
-                optimalAllocations = optimalSolution.bestAllocations;
-                optimalCost = optimalSolution.minCost;
-                console.log("Optimal Cost:", optimalCost);
-                console.log("Optimal Allocations:", optimalAllocations);
-            }
-        }
-
-        // Initialize the game
-        initGame();
     </script>
 </body>
 </html>
