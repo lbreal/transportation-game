@@ -11,6 +11,10 @@
             margin-bottom: 20px;
             line-height: 1.6;
         }
+        #distances {
+            margin-top: 20px;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
@@ -23,10 +27,12 @@
     </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <div id="message"></div>
+    <div id="distances"></div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const messageDiv = document.getElementById('message');
+        const distancesDiv = document.getElementById('distances');
 
         const WIDTH = 800;
         const HEIGHT = 600;
@@ -107,6 +113,9 @@
                 messageDiv.textContent = '';
                 messageDiv.style.display = 'none';
             }
+
+            // Display distances
+            displayDistances();
         }
 
         // Function to calculate total cost
@@ -186,6 +195,26 @@
             }
 
             return { bestAllocations, minCost: Math.round(minCost) };
+        }
+
+        // Function to display distances
+        function displayDistances() {
+            distancesDiv.innerHTML = '<h3>Distances:</h3>';
+            let table = '<table border="1" cellpadding="5" cellspacing="0">';
+            table += '<tr><th></th>';
+            for (let j = 0; j < numConsumers; j++) {
+                table += `<th>Consumer ${j + 1}</th>`;
+            }
+            table += '</tr>';
+            for (let i = 0; i < numSuppliers; i++) {
+                table += `<tr><th>Supplier ${i + 1}</th>`;
+                for (let j = 0; j < numConsumers; j++) {
+                    table += `<td>${transportCosts[i][j]}</td>`;
+                }
+                table += '</tr>';
+            }
+            table += '</table>';
+            distancesDiv.innerHTML += table;
         }
 
         // Mouse click event
