@@ -12,7 +12,7 @@
             line-height: 1.6;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/glpk.js@latest/dist/glpk.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/glpk.js/4.65.0/glpk.min.js"></script>
 </head>
 <body>
     <h1>Transportation Problem Game</h1>
@@ -227,7 +227,12 @@
                     }
                 }
             } else if (event.button === 2) { // Right click
-                const { bestAllocations, minCost } = findOptimalSolution();
+                const optimalSolution = findOptimalSolution();
+                if (!optimalSolution) {
+                    alert("No optimal solution found. Please check the console for details.");
+                    return;
+                }
+                const { bestAllocations, minCost } = optimalSolution;
                 const userCost = calculateTotalCost(allocations);
 
                 if (userCost === minCost) {
