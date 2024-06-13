@@ -149,7 +149,8 @@
                     })),
                     bnds: {
                         type: glpk.GLP_UP,
-                        ub: suppliers[i].supply
+                        ub: suppliers[i].supply,
+                        lb: 0
                     }
                 });
             }
@@ -171,6 +172,11 @@
 
             let solution = glpk.solve(problem, glpk.GLP_MSG_OFF);
 
+            if (solution.status !== glpk.GLP_OPT) {
+                console.error("No optimal solution found");
+                return null;
+            }
+
             let bestAllocations = [];
             let minCost = solution.result.z;
 
@@ -182,6 +188,9 @@
                     }
                 }
             }
+
+            console.log("Optimal solution cost:", minCost);
+            console.log("Optimal allocations:", bestAllocations);
 
             return { bestAllocations, minCost };
         }
@@ -274,6 +283,15 @@
             message = '';
 
             drawPointsAndText();
+
+            // Calculate and log the optimal solution at the start
+            const optimalSolution = findOptimalSolution();
+            if (optimalSolution) {
+                optimalAllocations = optimalSolution.bestAllocations;
+                optimalCost = optimalSolution.minCost;
+                console.log("Optimal Cost:", optimalCost);
+                console.log("Optimal Allocations:", optimalAllocations);
+            }
         }
 
         // Initialize the game
