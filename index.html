@@ -20,6 +20,7 @@
             font-size: 18px;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.0.0/math.js"></script>
 </head>
 <body>
     <h1>Jogo do Problema de Transporte</h1>
@@ -147,72 +148,87 @@
             return Math.round(totalCost);
         }
 
-        // Function to find the optimal solution using MODI method
+        // Function to find the optimal solution using Math.js
         function findOptimalSolution() {
-            let remainingSupply = suppliers.map(s => s.supply);
-            let remainingDemand = consumers.map(c => c.demand);
-            let minCost = 0;
-            let bestAllocations = [];
+            let supply = suppliers.map(s => s.supply);
+            let demand = consumers.map(c => c.demand);
+            let costMatrix = transportCosts;
+            let variables = [];
 
+            // Create variables for each combination of supplier and consumer
             for (let i = 0; i < numSuppliers; i++) {
                 for (let j = 0; j < numConsumers; j++) {
-                    if (remainingSupply[i] > 0 && remainingDemand[j] > 0) {
-                        let quantity = Math.min(remainingSupply[i], remainingDemand[j]);
-                        bestAllocations.push([suppliers[i], consumers[j], quantity]);
-                        remainingSupply[i] -= quantity;
-                        remainingDemand[j] -= quantity;
-                        minCost += quantity * transportCosts[i][j];
-                    }
+                    variables.push({
+                        name: `x${i}${j}`,
+                        cost: costMatrix[i][j],
+                        supply: supply[i],
+                        demand: demand[j]
+                    });
                 }
             }
 
-            // Applying MODI method to optimize the initial solution
-            let u = new Array(numSuppliers).fill(null);
-            let v = new Array(numConsumers).fill(null);
-            u[0] = 0;
+            // Set up the constraints
+            let constraints = [];
 
-            while (true) {
-                let improvements = false;
-
-                // Calculate potentials
-                for (let [s, c, q] of bestAllocations) {
-                    if (u[s.index] !== null) {
-                        v[c.index] = transportCosts[s.index][c.index] - u[s.index];
-                    } else if (v[c.index] !== null) {
-                        u[s.index] = transportCosts[s.index][c.index] - v[c.index];
-                    }
+            // Supply constraints
+            for (let i = 0; i < numSuppliers; i++) {
+                let constraint = { lhs: [], rhs: supply[i] };
+                for (let j = 0; j < numConsumers; j++) {
+                    constraint.lhs.push(`x${i}${j}`);
                 }
+                constraints.push(constraint);
+            }
 
-                // Check for optimality
-                let entering = null;
-                let maxReduction = 0;
+            // Demand constraints
+            for (let j = 0; j < numConsumers; j++) {
+                let constraint = { lhs: [], rhs: demand[j] };
                 for (let i = 0; i < numSuppliers; i++) {
-                    for (let j = 0; j < numConsumers; j++) {
-                        if (!bestAllocations.some(([s, c]) => s.index === i && c.index === j)) {
-                            let cost = transportCosts[i][j];
-                            let reduction = cost - (u[i] + v[j]);
-                            if (reduction < maxReduction) {
-                                maxReduction = reduction;
-                                entering = [i, j];
-                                improvements = true;
-                            }
-                        }
-                    }
+                    constraint.lhs.push(`x${i}${j}`);
                 }
-
-                if (!improvements) break;
-
-                // Update the allocations (simplified for this example)
-                let [ei, ej] = entering;
-                let delta = Math.min(remainingSupply[ei], remainingDemand[ej]);
-                remainingSupply[ei] -= delta;
-                remainingDemand[ej] -= delta;
-                bestAllocations.push([suppliers[ei], consumers[ej], delta]);
-
-                minCost += delta * transportCosts[ei][ej];
+                constraints.push(constraint);
             }
 
-            return { bestAllocations, minCost: Math.round(minCost) };
+            // Define the linear programming problem
+            let lp = {
+                optimize: 'cost',
+                opType: 'min',
+                constraints: {},
+                variables: {}
+            };
+
+            for (let constraint of constraints) {
+                for (let varName of constraint.lhs) {
+                    if (!lp.constraints[varName]) {
+                        lp.constraints[varName] = { max: constraint.rhs };
+                    } else {
+                        lp.constraints[varName].max = constraint.rhs;
+                    }
+                }
+            }
+
+            for (let variable of variables) {
+                lp.variables[variable.name] = { cost: variable.cost };
+                for (let constraint of constraints) {
+                    if (constraint.lhs.includes(variable.name)) {
+                        lp.variables[variable.name][constraint.lhs[0]] = 1;
+                    }
+                }
+            }
+
+            // Solve the linear programming problem using Math.js
+            let solution = math.optimize(lp);
+            optimalAllocations = [];
+            optimalCost = 0;
+
+            for (let variable of variables) {
+                let quantity = solution[variable.name];
+                if (quantity > 0) {
+                    optimalAllocations.push([suppliers[parseInt(variable.name[1])], consumers[parseInt(variable.name[2])], quantity]);
+                    optimalCost += quantity * variable.cost;
+                }
+            }
+
+            optimalCost = Math.round(optimalCost);
         }
 
         // Function to display distances
@@ -271,17 +287,16 @@
                     }
                 }
             } else if (event.button === 2) { // Right click
-                const { bestAllocations, minCost } = findOptimalSolution();
+                findOptimalSolution();
                 const userCost = calculateTotalCost(allocations);
 
-                if (userCost === minCost) {
+                if (userCost === optimalCost) {
                     message = 'Parabéns! Você encontrou a solução ótima.';
                     messageDiv.style.color = 'green';
                     optimalAllocations = allocations;
                 } else {
-                    message = `Dessa vez não! O custo ótimo é ${minCost}.`;
+                    message = `Dessa vez não! O custo ótimo é ${optimalCost}.`;
                     messageDiv.style.color = 'red';
-                    optimalAllocations = bestAllocations;
                 }
 
                 showOptimal = true;
