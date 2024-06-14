@@ -20,12 +20,12 @@
 <body>
     <h1>Jogo do Problema de Transporte</h1>
     <div id="instructions">
-        <p>Imagine que você é o gerente da cadeia de suprimentos da MóveisDesign, a marca de móveis mais bem-sucedida do país. Sua responsabilidade é gerenciar cada etapa do processo, desde a obtenção das matérias-primas até a entrega dos móveis finalizados nas lojas.</p>
-        <p>Você tem vários fornecedores de madeira, com localidades e com capacidades de produção distintas. Sua tarefa é entregar essa madeira para várias fábricas de móveis, cada uma com uma demanda específica.</p>
-        <p>Para atender à demanda do mercado, como você distribuiria a madeira de cada fornecedor para cada fábrica, de modo a minimizar o custo total, respeitando as capacidades dos fornecedores e as demandas das fábricas?</p>
-        <p>No diagrama, os nós vermelhos representam os fornecedores e os nós verdes representam as fábricas.</p>
-        <p>Para distribuir a madeira, clique com o botão esquerdo do mouse em cada fornecedor, indique a quantidade de produto a ser enviada e clique em OK. Em seguida, selecione a fábrica de destino para essa quantidade.</p>
-        <p>Para verificar a solução ótima, clique ao final com o botão direito do mouse.</p>
+        <p>Imagine que você é o gerente da cadeia de suprimentos da MóveisDesign, a marca de móveis mais bem-sucedida do país. Você é responsável por gerenciar cada etapa do processo, desde a obtenção das matérias-primas até a entrega dos móveis finalizados nas lojas.</p>
+        <p>Você tem vários fornecedores de madeira, cada um com preços diferentes e quantidades máximas diferentes, e precisa entregar essa madeira para várias fábricas de móveis, cada uma com uma capacidade máxima e custo de produção diferente.</p>
+        <p>Para atender à demanda de móveis no mercado, qual seria a melhor combinação de fornecedores de madeira com as fábricas, de modo a minimizar o custo total, cobrindo toda a demanda?</p>
+        <p>Os nós vermelhos são os <strong>fornecedores</strong> e os nós verdes são as <strong>fábricas</strong>.</p>
+        <p>Clique com o botão esquerdo do mouse em cima de cada fornecedor e indique a quantidade de produto que deverá sair desse fornecedor, clique em OK e em seguida clique para qual fábrica deverá ser enviada aquela quantidade.</p>
+        <p>Para saber a resposta ótima, clique ao final com o botão direito do mouse.</p>
     </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <div id="message"></div>
@@ -229,13 +229,17 @@
             if (event.button === 0) { // Left click
                 for (let supplier of suppliers) {
                     if (Math.hypot(supplier.x - x, supplier.y - y) < 15) {
-                        let quantity = prompt("Digite a quantidade a ser transportada deste fornecedor:");
+                        let currentAllocated = allocations
+                            .filter(allocation => allocation[0] === supplier)
+                            .reduce((sum, allocation) => sum + allocation[2], 0);
+                        let remainingSupply = supplier.supply - currentAllocated;
+                        let quantity = prompt(`Digite a quantidade a ser transportada deste fornecedor (máximo ${remainingSupply}):`);
                         quantity = parseInt(quantity);
-                        if (!isNaN(quantity) && quantity > 0 && quantity <= supplier.supply) {
+                        if (!isNaN(quantity) && quantity > 0 && quantity <= remainingSupply) {
                             allocations.push([supplier, null, quantity]);
                             drawPointsAndText();
                         } else {
-                            alert("Quantidade inválida. Por favor, insira um número entre 1 e a oferta do fornecedor.");
+                            alert(`Quantidade inválida. Por favor, insira um número entre 1 e ${remainingSupply}.`);
                         }
                         return;
                     }
