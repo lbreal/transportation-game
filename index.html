@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Transportation Problem Game</title>
+    <title>Jogo do Problema de Transporte</title>
     <style>
         body { font-family: Arial, sans-serif; }
         #gameCanvas { border: 1px solid black; }
@@ -18,12 +18,14 @@
     </style>
 </head>
 <body>
-    <h1>Transportation Problem Game</h1>
+    <h1>Jogo do Problema de Transporte</h1>
     <div id="instructions">
-        <p>Select quantities from <strong>suppliers</strong> by clicking with the left mouse button.</p>
-        <p>Allocate these quantities to <strong>consumers</strong> by clicking with the left mouse button.</p>
-        <p>Your goal is to minimize the total transportation cost.</p>
-        <p>Once you have allocated all quantities, click the right mouse button to see the optimal solution.</p>
+        <p>Imagine que você é o gerente da cadeia de suprimentos da MóveisDesign, a marca de móveis mais bem-sucedida do país. Você é responsável por gerenciar cada etapa do processo, desde a obtenção das matérias-primas até a entrega dos móveis finalizados nas lojas.</p>
+        <p>Você tem vários fornecedores de madeira, cada um com preços diferentes e quantidades máximas diferentes, e precisa entregar essa madeira para várias fábricas de móveis, cada uma com uma capacidade máxima e custo de produção diferente.</p>
+        <p>Para atender à demanda de móveis no mercado, qual seria a melhor combinação de fornecedores de madeira com as fábricas, de modo a minimizar o custo total, cobrindo toda a demanda?</p>
+        <p>Os nós vermelhos são os <strong>fornecedores</strong> e os nós verdes são as <strong>fábricas</strong>.</p>
+        <p>Clique com o botão esquerdo do mouse em cima de cada fornecedor e indique a quantidade de produto que deverá sair desse fornecedor, clique em OK e em seguida clique para qual fábrica deverá ser enviada aquela quantidade.</p>
+        <p>Para saber a resposta ótima, clique ao final com o botão direito do mouse.</p>
     </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <div id="message"></div>
@@ -85,7 +87,8 @@
                 ctx.fill();
                 ctx.fillStyle = 'black';
                 ctx.font = '12px Arial';
-                ctx.fillText(`Supply: ${supplier.supply}`, supplier.x + 15, supplier.y);
+                ctx.fillText(`Fornecedor ${supplier.index + 1}`, supplier.x - 15, supplier.y - 15);
+                ctx.fillText(`Oferta: ${supplier.supply}`, supplier.x + 15, supplier.y);
             }
 
             // Draw consumers
@@ -96,14 +99,15 @@
                 ctx.fill();
                 ctx.fillStyle = 'black';
                 ctx.font = '12px Arial';
-                ctx.fillText(`Demand: ${consumer.demand}`, consumer.x + 15, consumer.y);
+                ctx.fillText(`Fábrica ${consumer.index + 1}`, consumer.x - 15, consumer.y - 15);
+                ctx.fillText(`Demanda: ${consumer.demand}`, consumer.x + 15, consumer.y);
             }
 
             // Draw total cost text
             const totalCost = calculateTotalCost(allocations);
             ctx.fillStyle = 'black';
             ctx.font = '24px Arial';
-            ctx.fillText(`Total Cost: ${totalCost}`, 10, 30);
+            ctx.fillText(`Custo Total: ${totalCost}`, 10, 30);
 
             // Display message
             if (message) {
@@ -199,15 +203,15 @@
 
         // Function to display distances
         function displayDistances() {
-            distancesDiv.innerHTML = '<h3>Distances:</h3>';
+            distancesDiv.innerHTML = '<h3>Distâncias:</h3>';
             let table = '<table border="1" cellpadding="5" cellspacing="0">';
             table += '<tr><th></th>';
             for (let j = 0; j < numConsumers; j++) {
-                table += `<th>Consumer ${j + 1}</th>`;
+                table += `<th>Fábrica ${j + 1}</th>`;
             }
             table += '</tr>';
             for (let i = 0; i < numSuppliers; i++) {
-                table += `<tr><th>Supplier ${i + 1}</th>`;
+                table += `<tr><th>Fornecedor ${i + 1}</th>`;
                 for (let j = 0; j < numConsumers; j++) {
                     table += `<td>${transportCosts[i][j]}</td>`;
                 }
@@ -225,13 +229,13 @@
             if (event.button === 0) { // Left click
                 for (let supplier of suppliers) {
                     if (Math.hypot(supplier.x - x, supplier.y - y) < 15) {
-                        let quantity = prompt("Enter quantity to transport from this supplier:");
+                        let quantity = prompt("Digite a quantidade a ser transportada deste fornecedor:");
                         quantity = parseInt(quantity);
                         if (!isNaN(quantity) && quantity > 0 && quantity <= supplier.supply) {
                             allocations.push([supplier, null, quantity]);
                             drawPointsAndText();
                         } else {
-                            alert("Invalid quantity. Please enter a number between 1 and the supplier's supply.");
+                            alert("Quantidade inválida. Por favor, insira um número entre 1 e a oferta do fornecedor.");
                         }
                         return;
                     }
@@ -253,11 +257,11 @@
                 const userCost = calculateTotalCost(allocations);
 
                 if (userCost === minCost) {
-                    message = 'Congratulations! You found the optimal solution.';
+                    message = 'Parabéns! Você encontrou a solução ótima.';
                     messageDiv.style.color = 'green';
                     optimalAllocations = allocations;
                 } else {
-                    message = `Not this time! The optimal cost is ${minCost}.`;
+                    message = `Dessa vez não! O custo ótimo é ${minCost}.`;
                     messageDiv.style.color = 'red';
                     optimalAllocations = bestAllocations;
                 }
