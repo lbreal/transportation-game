@@ -15,6 +15,10 @@
             margin-top: 20px;
             font-size: 18px;
         }
+        #legend {
+            margin-top: 20px;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
@@ -29,6 +33,10 @@
     </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <div id="message"></div>
+    <div id="legend">
+        <p><span style="color: blue;">─</span> Alocações do Usuário</p>
+        <p><span style="color: yellow; border-bottom: 1px dashed;">─</span> Alocações Ótimas</p>
+    </div>
     <div id="distances"></div>
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -49,6 +57,7 @@
         let message = '';
         let optimalAllocations = [];
         let optimalCost = 0;
+        let showOptimal = false;
 
         // Function to draw points on the canvas
         function drawPointsAndText() {
@@ -67,16 +76,20 @@
                 }
             }
 
-            // Draw optimal allocations
-            for (let [supplier, consumer, quantity] of optimalAllocations) {
-                if (quantity > 0) {
-                    ctx.beginPath();
-                    ctx.moveTo(supplier.x, supplier.y);
-                    ctx.lineTo(consumer.x, consumer.y);
-                    ctx.strokeStyle = 'yellow';
-                    ctx.stroke();
-                    ctx.fillStyle = 'black';
-                    ctx.fillText(quantity, (supplier.x + consumer.x) / 2, (supplier.y + consumer.y) / 2);
+            if (showOptimal) {
+                // Draw optimal allocations
+                for (let [supplier, consumer, quantity] of optimalAllocations) {
+                    if (quantity > 0) {
+                        ctx.beginPath();
+                        ctx.setLineDash([5, 5]); // Dashed line
+                        ctx.moveTo(supplier.x, supplier.y);
+                        ctx.lineTo(consumer.x, consumer.y);
+                        ctx.strokeStyle = 'yellow';
+                        ctx.stroke();
+                        ctx.setLineDash([]); // Reset line dash
+                        ctx.fillStyle = 'black';
+                        ctx.fillText(quantity, (supplier.x + consumer.x) / 2, (supplier.y + consumer.y) / 2);
+                    }
                 }
             }
 
@@ -271,6 +284,7 @@
                     optimalAllocations = bestAllocations;
                 }
 
+                showOptimal = true;
                 drawPointsAndText();
             }
         });
@@ -329,6 +343,7 @@
             allocations = [];
             optimalAllocations = [];
             message = '';
+            showOptimal = false;
 
             drawPointsAndText();
         }
