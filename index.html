@@ -40,6 +40,7 @@
         const HEIGHT = 600;
         const numSuppliers = 3;
         const numConsumers = 3;
+        const minDistance = 50;
 
         let suppliers = [];
         let consumers = [];
@@ -277,18 +278,44 @@
         // Prevent context menu on right click
         canvas.addEventListener('contextmenu', (event) => event.preventDefault());
 
+        // Function to check if the distance between points is acceptable
+        function isDistanceAcceptable(newPoint, existingPoints, minDistance) {
+            for (let point of existingPoints) {
+                if (Math.hypot(newPoint.x - point.x, newPoint.y - point.y) < minDistance) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Function to generate points with minimum distance
+        function generatePoints(numPoints, minDistance) {
+            let points = [];
+            while (points.length < numPoints) {
+                let newPoint = {
+                    x: Math.random() * (WIDTH - 100) + 50,
+                    y: Math.random() * (HEIGHT - 100) + 50
+                };
+                if (isDistanceAcceptable(newPoint, points, minDistance)) {
+                    points.push(newPoint);
+                }
+            }
+            return points;
+        }
+
         // Function to initialize the game
         function initGame() {
-            suppliers = Array.from({ length: numSuppliers }, (_, index) => ({
-                x: Math.random() * (WIDTH - 100) + 50,
-                y: Math.random() * (HEIGHT - 100) + 50,
+            let supplierPoints = generatePoints(numSuppliers, minDistance);
+            let consumerPoints = generatePoints(numConsumers, minDistance);
+
+            suppliers = supplierPoints.map((point, index) => ({
+                ...point,
                 supply: Math.floor(Math.random() * 50) + 20,
                 index: index
             }));
 
-            consumers = Array.from({ length: numConsumers }, (_, index) => ({
-                x: Math.random() * (WIDTH - 100) + 50,
-                y: Math.random() * (HEIGHT - 100) + 50,
+            consumers = consumerPoints.map((point, index) => ({
+                ...point,
                 demand: Math.floor(Math.random() * 50) + 20,
                 index: index
             }));
