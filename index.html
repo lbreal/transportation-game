@@ -103,7 +103,9 @@
                         ctx.stroke();
                         ctx.setLineDash([]); // Reset line dash
                         ctx.fillStyle = 'black';
-                        ctx.fillText(quantity, (supplier.x + consumer.x) / 2, (supplier.y + consumer.y) / 2);
+                        const textX = supplier.x + 0.9 * (consumer.x - supplier.x);
+                        const textY = supplier.y + 0.9 * (consumer.y - supplier.y);
+                        ctx.fillText(quantity, textX, textY);
                     }
                 }
             }
