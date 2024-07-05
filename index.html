@@ -20,7 +20,6 @@
             font-size: 18px;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/mathjs@9.4.4/lib/browser/math.js"></script>
 </head>
 <body>
     <h1>Jogo do Problema de Transporte</h1>
@@ -163,89 +162,6 @@
             return Math.round(totalCost);
         }
 
-        // Function to find the optimal solution using Math.js
-        function findOptimalSolution() {
-            let supply = suppliers.map(s => s.supply);
-            let demand = consumers.map(c => c.demand);
-            let costMatrix = transportCosts;
-            let variables = [];
-
-            // Create variables for each combination of supplier and consumer
-            for (let i = 0; i < numSuppliers; i++) {
-                for (let j = 0; j < numConsumers; j++) {
-                    variables.push({
-                        name: `x${i}${j}`,
-                        cost: costMatrix[i][j],
-                        supply: supply[i],
-                        demand: demand[j]
-                    });
-                }
-            }
-
-            // Set up the constraints
-            let constraints = [];
-
-            // Supply constraints
-            for (let i = 0; i < numSuppliers; i++) {
-                let constraint = { lhs: [], rhs: supply[i] };
-                for (let j = 0; j < numConsumers; j++) {
-                    constraint.lhs.push(`x${i}${j}`);
-                }
-                constraints.push(constraint);
-            }
-
-            // Demand constraints
-            for (let j = 0; j < numConsumers; j++) {
-                let constraint = { lhs: [], rhs: demand[j] };
-                for (let i = 0; i < numSuppliers; i++) {
-                    constraint.lhs.push(`x${i}${j}`);
-                }
-                constraints.push(constraint);
-            }
-
-            // Define the linear programming problem
-            let lp = {
-                optimize: 'cost',
-                opType: 'min',
-                constraints: {},
-                variables: {}
-            };
-
-            for (let constraint of constraints) {
-                for (let varName of constraint.lhs) {
-                    if (!lp.constraints[varName]) {
-                        lp.constraints[varName] = { max: constraint.rhs };
-                    } else {
-                        lp.constraints[varName].max = constraint.rhs;
-                    }
-                }
-            }
-
-            for (let variable of variables) {
-                lp.variables[variable.name] = { cost: variable.cost };
-                for (let constraint of constraints) {
-                    if (constraint.lhs.includes(variable.name)) {
-                        lp.variables[variable.name][constraint.lhs[0]] = 1;
-                    }
-                }
-            }
-
-            // Solve the linear programming problem using Math.js
-            let solution = math.optimize(lp);
-            optimalAllocations = [];
-            optimalCost = 0;
-
-            for (let variable of variables) {
-                let quantity = solution[variable.name];
-                if (quantity > 0) {
-                    optimalAllocations.push([suppliers[parseInt(variable.name[1])], consumers[parseInt(variable.name[2])], quantity]);
-                    optimalCost += quantity * variable.cost;
-                }
-            }
-
-            optimalCost = Math.round(optimalCost);
-        }
-
         // Function to display distances
         function displayDistances() {
             distancesDiv.innerHTML = '<h3>Distâncias:</h3>';
@@ -302,13 +218,12 @@
                     }
                 }
             } else if (event.button === 2) { // Right click
-                findOptimalSolution();
                 const userCost = calculateTotalCost(allocations);
+                const optimalCost = calculateTotalCost(optimalAllocations.map(([sIndex, cIndex, quantity]) => [suppliers[sIndex], consumers[cIndex], quantity]));
 
                 if (userCost === optimalCost) {
                     message = 'Parabéns! Você encontrou a solução ótima.';
                     messageDiv.style.color = 'green';
-                    optimalAllocations = allocations;
                 } else {
                     message = `Dessa vez não! O custo ótimo é ${optimalCost}.`;
                     messageDiv.style.color = 'red';
