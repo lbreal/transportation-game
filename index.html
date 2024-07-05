@@ -99,7 +99,7 @@
                         ctx.setLineDash([5, 5]); // Dashed line
                         ctx.moveTo(supplier.x, supplier.y);
                         ctx.lineTo(consumer.x, consumer.y);
-                        ctx.strokeStyle = 'yellow';
+                        ctx.strokeStyle = 'black';
                         ctx.stroke();
                         ctx.setLineDash([]); // Reset line dash
                         ctx.fillStyle = 'black';
@@ -161,7 +161,7 @@
                     totalCost += quantity * transportCosts[supplier.index][consumer.index];
                 }
             }
-            return Math.round(totalCost);
+            return totalCost;
         }
 
         // Function to display distances
