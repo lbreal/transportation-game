@@ -51,13 +51,26 @@
         const numConsumers = 3;
         const minDistance = 50;
 
+        const supplierCapacities = [800, 600, 600];
+        const consumerDemands = [800, 700, 500];
+        const distances = [
+            [100, 60, 100],
+            [110, 101, 100],
+            [101, 100, 100]
+        ];
+
         let suppliers = [];
         let consumers = [];
         let transportCosts = [];
         let allocations = [];
         let message = '';
-        let optimalAllocations = [];
-        let optimalCost = 0;
+        let optimalAllocations = [
+            [0, 0, 100],
+            [0, 1, 700],
+            [1, 0, 100],
+            [1, 2, 500],
+            [2, 1, 600]
+        ];
         let showOptimal = false;
 
         // Function to draw points on the canvas
@@ -79,8 +92,10 @@
 
             if (showOptimal) {
                 // Draw optimal allocations
-                for (let [supplier, consumer, quantity] of optimalAllocations) {
+                for (let [sIndex, cIndex, quantity] of optimalAllocations) {
                     if (quantity > 0) {
+                        let supplier = suppliers[sIndex];
+                        let consumer = consumers[cIndex];
                         ctx.beginPath();
                         ctx.setLineDash([5, 5]); // Dashed line
                         ctx.moveTo(supplier.x, supplier.y);
@@ -307,56 +322,34 @@
         // Prevent context menu on right click
         canvas.addEventListener('contextmenu', (event) => event.preventDefault());
 
-        // Function to check if the distance between points is acceptable
-        function isDistanceAcceptable(newPoint, existingPoints, minDistance) {
-            for (let point of existingPoints) {
-                if (Math.hypot(newPoint.x - point.x, newPoint.y - point.y) < minDistance) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        // Function to generate points with minimum distance
-        function generatePoints(numPoints, minDistance) {
-            let points = [];
-            while (points.length < numPoints) {
-                let newPoint = {
-                    x: Math.random() * (WIDTH - 100) + 50,
-                    y: Math.random() * (HEIGHT - 100) + 50
-                };
-                if (isDistanceAcceptable(newPoint, points, minDistance)) {
-                    points.push(newPoint);
-                }
-            }
-            return points;
-        }
-
         // Function to initialize the game
         function initGame() {
-            let supplierPoints = generatePoints(numSuppliers, minDistance);
-            let consumerPoints = generatePoints(numConsumers, minDistance);
+            let supplierPoints = [
+                { x: 100, y: 100 },
+                { x: 100, y: 300 },
+                { x: 100, y: 500 }
+            ];
+            let consumerPoints = [
+                { x: 700, y: 100 },
+                { x: 700, y: 300 },
+                { x: 700, y: 500 }
+            ];
 
             suppliers = supplierPoints.map((point, index) => ({
                 ...point,
-                supply: Math.floor(Math.random() * 50) + 20,
+                supply: supplierCapacities[index],
                 index: index
             }));
 
             consumers = consumerPoints.map((point, index) => ({
                 ...point,
-                demand: Math.floor(Math.random() * 50) + 20,
+                demand: consumerDemands[index],
                 index: index
             }));
 
-            transportCosts = suppliers.map(supplier => 
-                consumers.map(consumer => 
-                    Math.round(Math.hypot(supplier.x - consumer.x, supplier.y - consumer.y))
-                )
-            );
+            transportCosts = distances;
 
             allocations = [];
-            optimalAllocations = [];
             message = '';
             showOptimal = false;
 
